@@ -1,4 +1,21 @@
-import { PackingRecord, PACKAGE_COLUMNS } from './types';
+import { PackingRecord, PACKAGE_COLUMNS, PACKAGE_GROUPS, PACKAGE_RATIOS } from './types';
+
+// Helper: Convert YYYY-MM-DD to DD/MM/YYYY
+export const formatDisplayDate = (isoDate: string): string => {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}/${month}/${year}`;
+};
+
+// Helper: Convert DD/MM/YYYY to YYYY-MM-DD
+export const parseDisplayDate = (displayDate: string): string => {
+  if (!displayDate) return '';
+  const parts = displayDate.split('/');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return displayDate; // Fallback or return as is if already ISO?
+};
 
 // A simple CSV parser to avoid external dependencies for this demo
 export const parseCSV = (text: string): PackingRecord[] => {
@@ -142,6 +159,30 @@ export const aggregateData = (data: PackingRecord[]) => {
   stats.topCustomer = Object.entries(shipmentCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
   stats.topMode = Object.entries(modeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
 
+  // Group Aggregations
+  const groupStats: Record<string, number> = {};
+  const ratioStats: Record<string, { used: number, maxCapacity: number }> = {};
+  
+  Object.keys(PACKAGE_GROUPS).forEach(group => {
+     groupStats[group] = 0;
+     ratioStats[group] = { used: 0, maxCapacity: 0 };
+  });
+
+  data.forEach(row => {
+    Object.entries(PACKAGE_GROUPS).forEach(([groupName, columns]) => {
+      columns.forEach(col => {
+         const qty = (row[col] as number) || 0;
+         groupStats[groupName] += qty;
+         
+         const ratio = PACKAGE_RATIOS[col] || 1;
+         // "Ratio 1:30" means 1 package holds 30 items.
+         // Max Capacity = Package QTY * Ratio
+         ratioStats[groupName].used += qty; // Total packages
+         ratioStats[groupName].maxCapacity += (qty * ratio);
+      });
+    });
+  });
+
   // Format chart data
   const timelineData = Object.values(dateMap).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
@@ -158,5 +199,5 @@ export const aggregateData = (data: PackingRecord[]) => {
   const modeChartData = Object.entries(modeCounts)
     .map(([name, value]) => ({ name, value }));
 
-  return { stats, timelineData, packageData, shipmentChartData, modeChartData };
+  return { stats, timelineData, packageData, shipmentChartData, modeChartData, groupStats, ratioStats };
 };

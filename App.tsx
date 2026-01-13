@@ -11,8 +11,16 @@ import { LayoutDashboard, Table, Upload, PackageCheck, Filter, X, Calendar, User
 const App: React.FC = () => {
   const [data, setData] = useState<PackingRecord[]>([]);
   const [view, setView] = useState<'dashboard' | 'table' | 'input'>('dashboard');
-  const [showUploader, setShowUploader] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   const [selectedYear, setSelectedYear] = useState<string>('All');
   const [selectedMonth, setSelectedMonth] = useState<string>('All');
@@ -43,8 +51,8 @@ const App: React.FC = () => {
   };
 
   const handleDataLoaded = (newData: PackingRecord[]) => {
+  const handleDataLoaded = (newData: PackingRecord[]) => {
     setData(newData);
-    setShowUploader(false);
     setView('dashboard');
     resetFilters();
   };
@@ -143,14 +151,14 @@ const App: React.FC = () => {
           <div className="bg-blue-600 p-2 rounded-lg">
              <PackageCheck className="text-white w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold text-slate-800">PackTrack</h1>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-white">PackTrack</h1>
         </div>
         
         <nav className="p-4 space-y-2 flex-1">
           <button 
             onClick={() => setView('dashboard')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${
-              view === 'dashboard' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              view === 'dashboard' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
             }`}
           >
             <LayoutDashboard className="w-5 h-5" />
@@ -160,7 +168,7 @@ const App: React.FC = () => {
           <button 
             onClick={() => setView('table')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${
-              view === 'table' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              view === 'table' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
             }`}
           >
             <Table className="w-5 h-5" />
@@ -170,7 +178,7 @@ const App: React.FC = () => {
           <button 
             onClick={() => setView('input')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${
-              view === 'input' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              view === 'input' ? 'bg-blue-600 text-white dark:bg-blue-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
             }`}
           >
             <PlusCircle className="w-5 h-5" />
@@ -178,84 +186,80 @@ const App: React.FC = () => {
           </button>
         </nav>
 
-        <div className="p-4 hidden lg:block border-t border-slate-100">
-          <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-            <h4 className="text-sm font-semibold text-slate-800 mb-2">Data Source</h4>
-            <button 
-              onClick={() => setShowUploader(true)}
-              className="w-full bg-white border border-slate-200 text-slate-700 py-2 rounded-lg text-xs font-bold hover:bg-slate-50 flex items-center justify-center gap-2 shadow-sm"
-            >
-              <Upload className="w-3 h-3" />
-              Upload CSV
-            </button>
-          </div>
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+           <button 
+             onClick={() => setIsDarkMode(!isDarkMode)}
+             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-xs"
+           >
+             {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+           </button>
         </div>
       </aside>
 
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
         <header className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
           <div className="mb-4 md:mb-0">
-            <h2 className="text-2xl font-bold text-slate-900">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
               {view === 'dashboard' ? 'Packing Overview' : view === 'table' ? 'Data Inspector' : 'New Packing Record'}
             </h2>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
               {view === 'dashboard' ? 'Real-time summary of operations.' : view === 'table' ? 'Detailed view of records.' : 'Fill in the details for a new shipment.'}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
               <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`}></div>
               {isLoading ? 'Syncing...' : 'Last update: '}
-              {!isLoading && <span className="font-bold text-slate-700">{new Date().toLocaleDateString('en-GB')}</span>}
+              {!isLoading && <span className="font-bold text-slate-700 dark:text-slate-200">{new Date().toLocaleDateString('en-GB')}</span>}
           </div>
         </header>
 
         {view !== 'input' && (
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row flex-wrap gap-4 items-end">
-            <div className="flex items-center gap-2 text-slate-600 font-bold mr-2 mb-2 md:mb-0">
+          <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-6 flex flex-col md:flex-row flex-wrap gap-4 items-end">
+            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300 font-bold mr-2 mb-2 md:mb-0">
               <Filter className="w-4 h-4" />
               <span className="text-sm uppercase tracking-wider">Filters</span>
             </div>
 
             <div className="w-full md:w-32">
-              <label className="block text-xs font-bold text-slate-500 mb-1">Year</label>
-              <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Year</label>
+              <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 outline-none">
                 <option value="All">All Years</option>
                 {filterOptions.years.map(year => <option key={year} value={year}>{year}</option>)}
               </select>
             </div>
 
             <div className="w-full md:w-40">
-              <label className="block text-xs font-bold text-slate-500 mb-1">Month</label>
-              <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Month</label>
+              <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 outline-none">
                 <option value="All">All Months</option>
                 {months.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
               </select>
             </div>
 
             <div className="w-full md:w-48">
-              <label className="block text-xs font-bold text-slate-500 mb-1">Customer</label>
-              <select value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Customer</label>
+              <select value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 outline-none">
                 <option value="All">All Customers</option>
                 {filterOptions.customers.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
 
             <div className="w-full md:w-48">
-              <label className="block text-xs font-bold text-slate-500 mb-1">Product</label>
-              <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Product</label>
+              <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 outline-none">
                 <option value="All">All Products</option>
                 {filterOptions.products.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
 
             <div className="flex gap-2 ml-auto w-full md:w-auto">
-              <button onClick={exportToCSV} disabled={filteredData.length === 0} className="flex-1 md:flex-none px-4 py-2 text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg flex items-center justify-center gap-2 transition-colors">
+              <button onClick={exportToCSV} disabled={filteredData.length === 0} className="flex-1 md:flex-none px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg flex items-center justify-center gap-2 transition-colors">
                 <Download className="w-4 h-4" />
                 Export
               </button>
               {(selectedYear !== 'All' || selectedMonth !== 'All' || selectedCustomer !== 'All' || selectedProduct !== 'All') && (
-                <button onClick={resetFilters} className="px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg flex items-center justify-center gap-1 transition-colors">
+                <button onClick={resetFilters} className="px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg flex items-center justify-center gap-1 transition-colors">
                   <X className="w-4 h-4" />
                   Clear
                 </button>
@@ -277,10 +281,6 @@ const App: React.FC = () => {
           />
         )}
       </main>
-
-      {showUploader && (
-        <DataUploader onDataLoaded={handleDataLoaded} onCancel={() => setShowUploader(false)} />
-      )}
     </div>
   );
 };

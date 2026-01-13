@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { PackingRecord } from '../types';
+import { PackingRecord, PACKAGE_GROUPS } from '../types';
 import { aggregateData } from '../utils';
 import StatsCard from './StatsCard';
 import { 
@@ -15,7 +15,7 @@ interface DashboardProps {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const Dashboard: React.FC<DashboardProps> = ({ data }) => {
-  const { stats, timelineData, packageData, shipmentChartData, modeChartData } = useMemo(() => aggregateData(data), [data]);
+  const { stats, timelineData, packageData, shipmentChartData, modeChartData, groupStats, ratioStats } = useMemo(() => aggregateData(data), [data]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -127,33 +127,91 @@ const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           </div>
         </div>
 
-        {/* Package Dimensions Breakdown */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Package Type Usage</h3>
-          <div className="h-80 overflow-y-auto pr-2 custom-scrollbar">
-             {/* Using a custom list for better readability with long labels instead of a cramped chart */}
-             <div className="space-y-3">
-               {packageData.map((pkg, idx) => (
-                 <div key={pkg.name} className="flex items-center group">
-                   <div className="w-32 text-xs font-medium text-slate-500 truncate" title={pkg.name}>
-                     {pkg.name}
-                   </div>
-                   <div className="flex-1 mx-3 h-3 bg-slate-100 rounded-full overflow-hidden">
-                     <div 
-                       className="h-full bg-emerald-500 rounded-full group-hover:bg-emerald-400 transition-colors"
-                       style={{ width: `${(pkg.value / Math.max(...packageData.map(p => p.value))) * 100}%` }}
-                     />
-                   </div>
-                   <div className="text-sm font-bold text-slate-700 w-16 text-right">
-                     {pkg.value.toLocaleString()}
-                   </div>
-                 </div>
-               ))}
-               {packageData.length === 0 && (
-                 <p className="text-center text-slate-400 py-10">No specific package data found.</p>
-               )}
-             </div>
+        {/* Package Dimensions Breakdown (Grouped) */}
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Package Type Usage</h3>
+          <div className="h-80 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+             {Object.entries(PACKAGE_GROUPS).map(([groupName, columns]) => {
+                const totalInGroup = groupStats[groupName] || 0;
+                if (totalInGroup === 0) return null;
+
+                const groupPackages = packageData.filter(pkg => columns.includes(pkg.name + " QTY") || columns.includes(pkg.name));
+                if (groupPackages.length === 0) return null;
+
+                return (
+                  <div key={groupName} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl border border-slate-100 dark:border-slate-600">
+                     <div className="flex justify-between items-center mb-3">
+                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">{groupName}</h4>
+                        <span className="text-xs font-black px-2 py-1 bg-white dark:bg-slate-600 rounded text-slate-500 dark:text-slate-300">
+                          Total: {totalInGroup.toLocaleString()}
+                        </span>
+                     </div>
+                     <div className="space-y-3">
+                       {groupPackages.map((pkg) => (
+                         <div key={pkg.name} className="flex items-center group">
+                           <div className="w-32 text-xs font-medium text-slate-500 dark:text-slate-400 truncate" title={pkg.name}>
+                             {pkg.name}
+                           </div>
+                           <div className="flex-1 mx-3 h-2 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
+                             <div 
+                               className="h-full bg-emerald-500 rounded-full group-hover:bg-emerald-400 transition-colors"
+                               style={{ width: `${(pkg.value / Math.max(...packageData.map(p => p.value))) * 100}%` }}
+                             />
+                           </div>
+                           <div className="text-xs font-bold text-slate-700 dark:text-slate-300 w-12 text-right">
+                             {pkg.value.toLocaleString()}
+                           </div>
+                         </div>
+                       ))}
+                     </div>
+                  </div>
+                );
+             })}
+             
+             {Object.values(groupStats).every(v => v === 0) && (
+               <p className="text-center text-slate-400 py-10">No specific package data found.</p>
+             )}
           </div>
+        </div>
+      </div>
+
+      {/* Ratio Analysis Section */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+           <Activity className="w-5 h-5 text-amber-500" />
+           Ratio Analysis (Product Capacity)
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+           {Object.keys(PACKAGE_GROUPS).map(groupName => {
+              const stat = ratioStats[groupName];
+              if (!stat || stat.used === 0) return null;
+
+              return (
+                 <div key={groupName} className="bg-slate-50 dark:bg-slate-700/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-600 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{groupName}</h4>
+                      <div className="flex items-baseline gap-1 mt-1">
+                         <span className="text-2xl font-black text-slate-900 dark:text-white">{stat.maxCapacity.toLocaleString()}</span>
+                         <span className="text-xs font-bold text-slate-400">units capacity</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-600">
+                       <div className="flex justify-between text-xs mb-1">
+                          <span className="text-slate-500 dark:text-slate-400">Packages Used</span>
+                          <span className="font-bold text-slate-700 dark:text-slate-300">{stat.used.toLocaleString()}</span>
+                       </div>
+                       <div className="w-full bg-slate-200 dark:bg-slate-600 h-1.5 rounded-full mt-2">
+                          <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '100%' }}></div>
+                       </div>
+                       <p className="mt-2 text-[10px] text-slate-400 italic text-right">
+                          Based on defined package ratios
+                       </p>
+                    </div>
+                 </div>
+              );
+           })}
         </div>
       </div>
     </div>
