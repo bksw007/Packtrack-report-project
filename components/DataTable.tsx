@@ -94,10 +94,10 @@ const DataTable: React.FC<DataTableProps> = ({ data, isDarkMode }) => {
               {sortedHeaders.map(header => (
                 <th 
                   key={header} 
-                  className={`p-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap sticky top-0 cursor-pointer transition-colors select-none group ${
+                  className={`p-3 text-xs font-black uppercase tracking-wider whitespace-nowrap sticky top-0 cursor-pointer transition-colors select-none group border-b-2 ${
                     isDarkMode 
-                      ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' 
-                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                      ? 'bg-slate-900 text-blue-400 hover:bg-slate-800 border-b-blue-500/50' 
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-b-blue-500'
                   }`}
                   onClick={() => handleSort(header)}
                 >

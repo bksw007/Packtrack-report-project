@@ -100,7 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, isDarkMode }) => {
              ? 'bg-slate-800 border border-slate-700 shadow-[0_0_15px_rgba(99,102,241,0.15)]' 
              : 'bg-white shadow-sm border border-slate-100 shadow-indigo-100/50'
         }`}>
-          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
             <Truck className="w-5 h-5 text-indigo-500" />
             Transport Mode
           </h3>
@@ -129,35 +129,50 @@ const Dashboard: React.FC<DashboardProps> = ({ data, isDarkMode }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Shipment/Customers */}
-        <div className={`p-6 rounded-xl transition-all duration-300 ${
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Top Shipment/Customers (20% width approx) */}
+        <div className={`p-6 rounded-xl lg:col-span-1 transition-all duration-300 ${
            isDarkMode 
              ? 'bg-slate-800 border border-slate-700 shadow-[0_0_15px_rgba(59,130,246,0.15)]' 
              : 'bg-white shadow-sm border border-slate-100 shadow-blue-100/50'
         }`}>
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Top Customers by Volume</h3>
-          <div className="h-80">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Top Customers</h3>
+          <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={shipmentChartData} layout="vertical" margin={{top: 5, right: 30, left: 40, bottom: 5}}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
+              <BarChart data={shipmentChartData} layout="vertical" margin={{top: 5, right: 0, left: 0, bottom: 5}}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12}} />
-                <Tooltip cursor={{fill: 'transparent'}} />
-                <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                <YAxis 
+                   dataKey="name" 
+                   type="category" 
+                   width={60} 
+                   tick={{fontSize: 10, fill: isDarkMode ? '#94a3b8' : '#64748b'}} 
+                />
+                <Tooltip 
+                   cursor={{fill: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}} 
+                   contentStyle={{
+                    backgroundColor: isDarkMode ? '#1e293b' : '#fff',
+                    borderColor: isDarkMode ? '#334155' : '#fff',
+                    color: isDarkMode ? '#fff' : '#000',
+                    borderRadius: '8px', 
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    fontSize: '12px'
+                  }}
+                />
+                <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={16} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Package Dimensions Breakdown (Grouped) */}
-        <div className={`p-6 rounded-xl transition-all duration-300 ${
+        {/* Package Dimensions Breakdown (Grouped) (80% width approx) */}
+        <div className={`p-6 rounded-xl lg:col-span-4 transition-all duration-300 ${
            isDarkMode 
              ? 'bg-slate-800 border border-slate-700 shadow-[0_0_15px_rgba(16,185,129,0.15)]' 
              : 'bg-white shadow-sm border border-slate-100 shadow-emerald-100/50'
         }`}>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Package Type Usage</h3>
-          <div className="h-80 overflow-y-auto pr-2 custom-scrollbar space-y-6">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Package Type Usage Breakdown</h3>
+          <div className="h-96 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 md:grid-cols-2 gap-6 items-start content-start">
              {Object.entries(PACKAGE_GROUPS).map(([groupName, columns]) => {
                 const totalInGroup = groupStats[groupName] || 0;
                 if (totalInGroup === 0) return null;
@@ -166,7 +181,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, isDarkMode }) => {
                 if (groupPackages.length === 0) return null;
 
                 return (
-                  <div key={groupName} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl border border-slate-100 dark:border-slate-600">
+                  <div key={groupName} className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl border border-slate-100 dark:border-slate-600 h-full">
                      <div className="flex justify-between items-center mb-3">
                         <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">{groupName}</h4>
                         <span className="text-xs font-black px-2 py-1 bg-white dark:bg-slate-600 rounded text-slate-500 dark:text-slate-300">
@@ -196,7 +211,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, isDarkMode }) => {
              })}
              
              {Object.values(groupStats).every(v => v === 0) && (
-               <p className="text-center text-slate-400 py-10">No specific package data found.</p>
+               <p className="text-center text-slate-400 py-10 col-span-2">No specific package data found.</p>
              )}
           </div>
         </div>
