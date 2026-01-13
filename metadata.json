@@ -1,0 +1,5 @@
+{
+  "name": "Packing Logistics Dashboard",
+  "description": "A comprehensive dashboard for visualizing packing operations, shipment summaries, and package dimension usage statistics.",
+  "requestFramePermissions": []
+}
