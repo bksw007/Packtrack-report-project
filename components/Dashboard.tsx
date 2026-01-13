@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
   LineChart, Line, PieChart, Pie, Cell 
 } from 'recharts';
-import { Package, Truck, Calendar, Layers, Activity, Users } from 'lucide-react';
+import { Package, Truck, Calendar, Layers, Activity, Users, BarChart2, Box } from 'lucide-react';
 
 interface DashboardProps {
   data: PackingRecord[];
@@ -129,14 +129,17 @@ const Dashboard: React.FC<DashboardProps> = ({ data, isDarkMode }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Top Shipment/Customers (20% width approx) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Top Shipment/Customers (35% width approx = 1 of 3 cols) */}
         <div className={`p-6 rounded-xl lg:col-span-1 transition-all duration-300 ${
            isDarkMode 
              ? 'bg-slate-800 border border-slate-700 shadow-[0_0_15px_rgba(59,130,246,0.15)]' 
              : 'bg-white shadow-sm border border-slate-100 shadow-blue-100/50'
         }`}>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Top Customers</h3>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <BarChart2 className="w-5 h-5 text-blue-500" />
+            Top Customers
+          </h3>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={shipmentChartData} layout="vertical" margin={{top: 5, right: 0, left: 0, bottom: 5}}>
@@ -165,13 +168,16 @@ const Dashboard: React.FC<DashboardProps> = ({ data, isDarkMode }) => {
           </div>
         </div>
 
-        {/* Package Dimensions Breakdown (Grouped) (80% width approx) */}
-        <div className={`p-6 rounded-xl lg:col-span-4 transition-all duration-300 ${
+        {/* Package Dimensions Breakdown (Grouped) (65% width approx = 2 of 3 cols) */}
+        <div className={`p-6 rounded-xl lg:col-span-2 transition-all duration-300 ${
            isDarkMode 
              ? 'bg-slate-800 border border-slate-700 shadow-[0_0_15px_rgba(16,185,129,0.15)]' 
              : 'bg-white shadow-sm border border-slate-100 shadow-emerald-100/50'
         }`}>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Package Type Usage Breakdown</h3>
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <Box className="w-5 h-5 text-emerald-500" />
+            Package Type Usage
+          </h3>
           <div className="h-96 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 md:grid-cols-2 gap-6 items-start content-start">
              {Object.entries(PACKAGE_GROUPS).map(([groupName, columns]) => {
                 const totalInGroup = groupStats[groupName] || 0;
