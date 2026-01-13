@@ -129,7 +129,7 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
   });
 
   // Default Modes
-  const modeOptions = ['Sea', 'Air', 'Truck', 'Courier'];
+  const modeOptions = ['SEA', 'AIR', 'TRUCK', 'COURIER'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -245,6 +245,7 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                 Go Back to Edit
               </button>
               <button 
+                onClick={handleConfirm}
                 disabled={isSaving}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -320,6 +321,7 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                     value={formData.Mode || ''}
                     onChange={handleChange as any}
                     options={modeOptions}
+                    placeholder="Select transport mode"
                     required
                     isDarkMode={isDarkMode}
                   />

@@ -21,13 +21,13 @@ const DataTable: React.FC<DataTableProps> = ({ data, isDarkMode }) => {
   // Sorting State
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
 
-  // Get all unique keys from the first record to use as headers, filtering out ID
-  const headers = data.length > 0 ? Object.keys(data[0]).filter(k => k !== 'id') : [];
+  // Get all unique keys from the first record to use as headers, filtering out ID and Timestamp
+  const headers = data.length > 0 ? Object.keys(data[0]).filter(k => k !== 'id' && k !== 'Timestamp') : [];
   
-  // Prioritize common headers
+  // Prioritize common headers and move Remark to the very end
   const prioritizedHeaders = ['Date', 'Shipment', 'Mode', 'Product', 'SI QTY', 'QTY'];
-  const otherHeaders = headers.filter(h => !prioritizedHeaders.includes(h));
-  const sortedHeaders = [...prioritizedHeaders, ...otherHeaders];
+  const otherHeaders = headers.filter(h => !prioritizedHeaders.includes(h) && h !== 'Remark');
+  const sortedHeaders = [...prioritizedHeaders, ...otherHeaders, ...(headers.includes('Remark') ? ['Remark'] : [])];
 
   // Sorting Logic
   const sortedData = useMemo(() => {
