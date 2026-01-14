@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import DataUploader from './components/DataUploader';
 import DataTable from './components/DataTable';
 import DataInputForm from './components/DataInputForm';
+import SuccessModal from './components/SuccessModal';
 import { LayoutDashboard, Table, Upload, PackageCheck, Filter, X, Calendar, User, Package, Download, PlusCircle } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -13,6 +14,8 @@ const App: React.FC = () => {
   const [view, setView] = useState<'dashboard' | 'table' | 'input'>('dashboard');
   const [isLoading, setIsLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     if (isDarkMode) {
@@ -61,7 +64,8 @@ const App: React.FC = () => {
     if (success) {
       await loadData(); // Reload to get the new row with server-side timestamp
       setView('table');
-      alert('Record saved successfully to Google Sheet!');
+      setSuccessMessage('Record saved successfully to Google Sheet!');
+      setShowSuccessModal(true);
     } else {
       alert('Failed to save record to Google Sheet. Check console/network.');
       // Optionally add to local state anyway? No, better to force sync.
@@ -116,16 +120,89 @@ const App: React.FC = () => {
 
   const exportToCSV = () => {
     if (filteredData.length === 0) return;
-    const headers = Object.keys(filteredData[0]).filter(k => k !== 'id');
+    
+    // Define base columns
+    const baseHeaders = ['Date', 'Shipment', 'Mode', 'Product', 'SI QTY', 'QTY'];
+    
+    // Define calculated columns
+    const calculatedHeaders = [
+      'Total Packages', 
+      'Standard Total', 
+      'Boxes Total', 
+      'Warp Total', 
+      'Returnable Total',
+      'Ratio Standard',
+      'Ratio Boxes', 
+      'Ratio Warp',
+      'Ratio Returnable'
+    ];
+    
+    // Package group definitions
+    const standardCols = ['110x110x115 QTY', '110x110x90 QTY', '110x110x65 QTY', '80X120X115 QTY', '80X120X90 QTY', '80X120X65 QTY'];
+    const boxesCols = ['42X46X68 QTY', '47X66X68 QTY', '53X53X58 QTY', '57X64X84 QTY', '68X74X86 QTY', '70X100X90 QTY', '27X27X22 QTY', '53X53X19 QTY'];
+    const warpCols = ['WARP QTY', 'UNIT QTY'];
+    const returnableCols = ['RETURNABLE QTY'];
+    
+    // Ratio values (for division)
+    const ratioValues: Record<string, number> = {
+      '110x110x115 QTY': 1, '110x110x90 QTY': 1, '110x110x65 QTY': 1,
+      '80X120X115 QTY': 1, '80X120X90 QTY': 1, '80X120X65 QTY': 1,
+      'RETURNABLE QTY': 2,
+      '42X46X68 QTY': 3, '47X66X68 QTY': 3, '53X53X58 QTY': 3, '57X64X84 QTY': 3,
+      '68X74X86 QTY': 3, '70X100X90 QTY': 3, '27X27X22 QTY': 30, '53X53X19 QTY': 30,
+      'WARP QTY': 10, 'UNIT QTY': 1
+    };
+    
+    const allHeaders = [...baseHeaders, ...calculatedHeaders];
+    
     const csvRows = [
-      headers.join(','),
-      ...filteredData.map(row => 
-        headers.map(header => {
-          const val = row[header];
+      allHeaders.join(','),
+      ...filteredData.map(row => {
+        // Calculate totals for each group
+        const standardTotal = standardCols.reduce((sum, col) => sum + (Number(row[col]) || 0), 0);
+        const boxesTotal = boxesCols.reduce((sum, col) => sum + (Number(row[col]) || 0), 0);
+        const warpTotal = warpCols.reduce((sum, col) => sum + (Number(row[col]) || 0), 0);
+        const returnableTotal = returnableCols.reduce((sum, col) => sum + (Number(row[col]) || 0), 0);
+        const totalPackages = standardTotal + boxesTotal + warpTotal + returnableTotal;
+        
+        // Calculate ratios (QTY / ratio value for each package, then sum per group)
+        const calcGroupRatio = (cols: string[]) => {
+          return cols.reduce((sum, col) => {
+            const qty = Number(row[col]) || 0;
+            const ratio = ratioValues[col] || 1;
+            return sum + (qty / ratio);
+          }, 0);
+        };
+        
+        const ratioStandard = calcGroupRatio(standardCols);
+        const ratioBoxes = calcGroupRatio(boxesCols);
+        const ratioWarp = calcGroupRatio(warpCols);
+        const ratioReturnable = calcGroupRatio(returnableCols);
+        
+        // Build row values
+        const values = [
+          row.Date,
+          row.Shipment,
+          row.Mode,
+          row.Product,
+          row['SI QTY'],
+          row.QTY,
+          totalPackages,
+          standardTotal,
+          boxesTotal,
+          warpTotal,
+          returnableTotal,
+          ratioStandard.toFixed(2),
+          ratioBoxes.toFixed(2),
+          ratioWarp.toFixed(2),
+          ratioReturnable.toFixed(2)
+        ];
+        
+        return values.map(val => {
           const escaped = String(val).replace(/"/g, '""');
           return `"${escaped}"`;
-        }).join(',')
-      )
+        }).join(',');
+      })
     ].join('\n');
 
     const blob = new Blob([csvRows], { type: 'text/csv;charset=utf-8;' });
@@ -281,6 +358,14 @@ const App: React.FC = () => {
           />
         )}
       </main>
+
+      {/* Success Modal */}
+      <SuccessModal 
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={successMessage}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 };

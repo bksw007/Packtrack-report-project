@@ -175,10 +175,10 @@ export const aggregateData = (data: PackingRecord[]) => {
          groupStats[groupName] += qty;
          
          const ratio = PACKAGE_RATIOS[col] || 1;
-         // "Ratio 1:30" means 1 package holds 30 items.
-         // Max Capacity = Package QTY * Ratio
+         // Fix: "Ratio 1:30" means qty / 30 = capacity used
+         // maxCapacity = qty / ratio (division, not multiplication)
          ratioStats[groupName].used += qty; // Total packages
-         ratioStats[groupName].maxCapacity += (qty * ratio);
+         ratioStats[groupName].maxCapacity += (ratio > 0 ? qty / ratio : 0);
       });
     });
   });

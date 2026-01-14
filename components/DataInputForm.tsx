@@ -120,7 +120,7 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
   const [formData, setFormData] = useState<Partial<PackingRecord>>({
     Date: new Date().toISOString().split('T')[0],
     Shipment: '',
-    Mode: 'Sea',
+    Mode: '',
     Product: '',
     "SI QTY": 1,
     QTY: 0,
