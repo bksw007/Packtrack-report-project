@@ -293,7 +293,7 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   {PACKAGE_COLUMNS.filter(col => (formData[col] as number) > 0).map(col => (
                     <div key={col} className={`p-3 rounded-lg border flex justify-between items-center ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                      <span className="text-[10px] font-bold text-slate-500 uppercase truncate mr-2" title={col}>{col.replace(' QTY', '')}</span>
+                      <span className="text-xs font-bold text-slate-500 uppercase truncate mr-2" title={col}>{col.replace(' QTY', '')}</span>
                       <span className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData[col]}</span>
                     </div>
                   ))}
@@ -372,6 +372,7 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                           ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-800 focus:ring-blue-500' 
                           : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:ring-blue-500'
                       }`}
+                      style={{ colorScheme: isDarkMode ? 'dark' : 'light' }}
                     />
                     <CalendarIcon className="w-4 h-4 text-slate-400 absolute right-4 top-3.5 pointer-events-none" />
                   </div>
@@ -399,18 +400,18 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                   isDarkMode={isDarkMode}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <CreatableSelect 
-                    label="Mode"
-                    name="Mode"
-                    value={formData.Mode || ''}
-                    onChange={handleChange as any}
-                    options={modeOptions}
-                    placeholder="Select transport mode"
-                    required
-                    isDarkMode={isDarkMode}
-                  />
+                <CreatableSelect 
+                  label="Mode"
+                  name="Mode"
+                  value={formData.Mode || ''}
+                  onChange={handleChange as any}
+                  options={modeOptions}
+                  placeholder="Select transport mode"
+                  required
+                  isDarkMode={isDarkMode}
+                />
 
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase">SI QTY</label>
                     <input 
@@ -423,18 +424,18 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                       }`}
                     />
                   </div>
-                </div>
-                <div className="pt-2">
-                  <label className="block text-[11px] font-black text-blue-600 mb-1.5 uppercase">Total Product QTY</label>
-                  <input 
-                    type="number" name="QTY" min="0" required
-                    value={formData.QTY} onChange={handleChange}
-                    className={`w-full px-4 py-4 border-2 text-xl font-black rounded-2xl transition-all outline-none focus:ring-2 ${
-                       isDarkMode 
-                         ? 'bg-blue-900/20 border-blue-900/50 text-blue-400 focus:bg-slate-800 focus:ring-blue-500' 
-                         : 'bg-blue-50 border-blue-100 text-blue-800 focus:bg-white focus:ring-blue-500'
-                    }`}
-                  />
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase">Total Product QTY</label>
+                    <input 
+                      type="number" name="QTY" min="0" required
+                      value={formData.QTY} onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-xl font-semibold transition-all outline-none focus:ring-2 ${
+                        isDarkMode 
+                          ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-800 focus:ring-blue-500' 
+                          : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:ring-blue-500'
+                      }`}
+                    />
+                  </div>
                 </div>
                 
                 <div className="pt-2">

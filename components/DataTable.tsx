@@ -259,7 +259,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, isDarkMode }) => {
                   <div className="grid grid-cols-2 gap-2">
                     {PACKAGE_COLUMNS.filter(col => (selectedRecord[col] as number) > 0).map(col => (
                       <div key={col} className={`p-2 rounded-lg border flex justify-between items-center ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase truncate mr-2" title={col}>{col.replace(' QTY', '')}</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase truncate mr-2" title={col}>{col.replace(' QTY', '')}</span>
                         <span className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedRecord[col]}</span>
                       </div>
                     ))}

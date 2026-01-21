@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -14,6 +14,32 @@
             fontFamily: {
               sans: ["Inter", "sans-serif"],
             },
+            colors: {
+              pastel: {
+                50: "#fdf4ff",
+                100: "#fae8ff",
+                200: "#f5d0fe",
+                300: "#e9a8f2",
+                400: "#d97bdf",
+                500: "#c34cc7",
+                600: "#a132a8",
+                700: "#842787",
+                800: "#6d226e",
+                900: "#5a1f5a",
+                rose: "#ffe4e6",
+                pink: "#fce7f3",
+                lavender: "#e9d5ff",
+                sky: "#e0f2fe",
+                mint: "#d1fae5",
+                peach: "#fed7aa",
+                cream: "#fef9c3",
+                bg: "#fdf2f8",
+                card: "#ffffff",
+                border: "#f9a8d4",
+                text: "#831843",
+                muted: "#9d174d",
+              },
+            },
           },
         },
       };
@@ -26,6 +52,142 @@
       body {
         font-family: "Inter", sans-serif;
         background-color: #f8fafc;
+      }
+
+      /* Pastel Theme Styles */
+      .pastel {
+        --pastel-bg: #fdf2f8;
+        --pastel-card: #ffffff;
+        --pastel-border: #fbcfe8;
+        --pastel-text: #831843;
+        --pastel-muted: #be185d;
+        --pastel-accent: #ec4899;
+      }
+
+      /* Gradient backgrounds for pages */
+      .pastel-gradient-pink {
+        background: linear-gradient(135deg, #fce7f3 0%, #fdf2f8 25%, #e0f2fe 50%, #d1fae5 75%, #fef9c3 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+      }
+      
+      .pastel-gradient-sky {
+        background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 25%, #fce7f3 50%, #e9d5ff 75%, #d1fae5 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+      }
+      
+      .pastel-gradient-mint {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 25%, #e0f2fe 50%, #fce7f3 75%, #e9d5ff 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+      }
+      
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      /* Blended pastel card styles */
+      .pastel .bg-white,
+      .pastel-card {
+        background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(252,231,243,0.3) 50%, rgba(224,242,254,0.3) 100%) !important;
+        backdrop-filter: blur(10px);
+        border-color: rgba(249,168,212,0.4) !important;
+      }
+      
+      .pastel .bg-slate-50 {
+        background: transparent !important;
+      }
+
+      .pastel .border-slate-200 {
+        border-color: rgba(249,168,212,0.5) !important;
+      }
+      
+      .pastel .border-slate-700,
+      .pastel .border-slate-100 {
+        border-color: rgba(209,250,229,0.5) !important;
+      }
+      
+      /* Pastel text colors */
+      .pastel .text-slate-900 {
+        color: #831843 !important;
+      }
+      .pastel .text-slate-700 {
+        color: #9d174d !important;
+      }
+      .pastel .text-slate-600 {
+        color: #be185d !important;
+      }
+      .pastel .text-slate-500 {
+        color: #db2777 !important;
+      }
+      .pastel .text-slate-400 {
+        color: #f472b6 !important;
+      }
+      
+      /* Pastel accent colors */
+      .pastel .bg-blue-600 {
+        background: linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #3b82f6 100%) !important;
+      }
+      .pastel .bg-blue-50 {
+        background: linear-gradient(135deg, rgba(252,231,243,0.8) 0%, rgba(233,213,255,0.6) 100%) !important;
+      }
+      .pastel .text-blue-700 {
+        color: #be185d !important;
+      }
+      .pastel .text-blue-600 {
+        color: #db2777 !important;
+      }
+      .pastel .text-blue-400 {
+        color: #f472b6 !important;
+      }
+      .pastel .bg-slate-100 {
+        background: linear-gradient(135deg, rgba(252,231,243,0.6) 0%, rgba(224,242,254,0.4) 100%) !important;
+      }
+      .pastel .bg-slate-800 {
+        background: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(252,231,243,0.5) 100%) !important;
+      }
+      .pastel .hover\:bg-slate-50:hover {
+        background: linear-gradient(135deg, rgba(252,231,243,0.5) 0%, rgba(224,242,254,0.3) 100%) !important;
+      }
+      
+      /* Emerald for buttons */
+      .pastel .bg-emerald-600 {
+        background: linear-gradient(135deg, #34d399 0%, #2dd4bf 50%, #38bdf8 100%) !important;
+      }
+      .pastel .text-emerald-600 {
+        color: #10b981 !important;
+      }
+      .pastel .text-emerald-400 {
+        color: #34d399 !important;
+      }
+      
+      /* Sidebar pastel styles */
+      .pastel aside {
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(252,231,243,0.6) 50%, rgba(224,242,254,0.4) 100%) !important;
+        border-color: rgba(249,168,212,0.3) !important;
+      }
+      
+      /* Inputs pastel styles */
+      .pastel input, .pastel select, .pastel textarea {
+        background: rgba(255,255,255,0.8) !important;
+        border-color: rgba(249,168,212,0.5) !important;
+      }
+      .pastel input:focus, .pastel select:focus, .pastel textarea:focus {
+        border-color: #ec4899 !important;
+        box-shadow: 0 0 0 3px rgba(236,72,153,0.2) !important;
+      }
+
+      /* Date input styling for pastel theme */
+      .pastel input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(30%) sepia(80%) saturate(1000%) hue-rotate(300deg);
+      }
+      
+      /* Charts pastel styles */
+      .pastel .recharts-cartesian-grid line {
+        stroke: rgba(249,168,212,0.3) !important;
       }
     </style>
     <script type="importmap">

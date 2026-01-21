@@ -8,13 +8,14 @@ import DataTable from './components/DataTable';
 import DataInputForm from './components/DataInputForm';
 import SuccessModal from './components/SuccessModal';
 import LoadingModal from './components/LoadingModal';
-import { LayoutDashboard, Table, Upload, PackageCheck, Filter, X, Calendar, User, Package, Download, PlusCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Table, Upload, PackageCheck, Filter, X, Calendar, User, Package, Download, PlusCircle, RefreshCw, ChevronLeft, ChevronRight, Palette, Moon, Sun } from 'lucide-react';
 
 const App: React.FC = () => {
   const [data, setData] = useState<PackingRecord[]>([]);
   const [view, setView] = useState<'dashboard' | 'table' | 'input'>('dashboard');
   const [isLoading, setIsLoading] = useState(true); // Start as true for initial load
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark' | 'pastel'>('light');
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -32,12 +33,16 @@ const App: React.FC = () => {
   }, [isLoading]);
 
   useEffect(() => {
-    if (isDarkMode) {
+    document.documentElement.classList.remove('dark', 'pastel');
+    if (theme === 'dark') {
       document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    } else if (theme === 'pastel') {
+      document.documentElement.classList.add('pastel');
     }
-  }, [isDarkMode]);
+  }, [theme]);
+
+  // Helper for dark mode check
+  const isDarkMode = theme === 'dark';
 
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState<string>('All');
@@ -285,7 +290,7 @@ const App: React.FC = () => {
           <button 
             onClick={() => setView('input')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors overflow-hidden whitespace-nowrap ${
-              view === 'input' ? 'bg-blue-600 text-white dark:bg-blue-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+              view === 'input' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
             } ${isSidebarCollapsed ? 'justify-center px-2' : ''}`}
             title={isSidebarCollapsed ? "Data Entry" : ""}
           >
@@ -296,21 +301,77 @@ const App: React.FC = () => {
           </button>
         </nav>
 
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800">
-           <button 
-             onClick={() => setIsDarkMode(!isDarkMode)}
-             className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-xs overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'px-2' : ''}`}
-             title={isSidebarCollapsed ? (isDarkMode ? 'Light Mode' : 'Dark Mode') : ""}
-           >
-             <span className={`transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto'}`}>
-               {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-             </span>
-             {isSidebarCollapsed && <div className="flex-shrink-0 w-4 h-4 rounded-full border border-slate-400" />}
-           </button>
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 relative">
+          <button 
+            onClick={() => setShowThemeMenu(!showThemeMenu)}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg transition-colors font-bold text-xs overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'px-2' : ''} ${
+              theme === 'pastel' 
+                ? 'bg-pink-100 text-pink-700 hover:bg-pink-200' 
+                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+            title={isSidebarCollapsed ? 'Theme' : ''}
+          >
+            {theme === 'dark' ? <Moon className="w-4 h-4 flex-shrink-0" /> : theme === 'pastel' ? <Palette className="w-4 h-4 flex-shrink-0" /> : <Sun className="w-4 h-4 flex-shrink-0" />}
+            <span className={`transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto'}`}>
+              {theme === 'dark' ? 'Dark' : theme === 'pastel' ? 'Pastel' : 'Light'} Theme
+            </span>
+          </button>
+          
+          {/* Theme Dropdown */}
+          {showThemeMenu && (
+            <div className={`absolute mb-2 rounded-xl shadow-xl border overflow-hidden z-30 animate-in slide-in-from-bottom-2 duration-200 ${
+              isSidebarCollapsed 
+                ? 'left-full bottom-0 ml-2 w-40' 
+                : 'bottom-full left-4 right-4'
+            } ${
+              theme === 'pastel' 
+                ? 'bg-white border-pink-200' 
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+            }`}>
+              <button
+                onClick={() => { setTheme('light'); setShowThemeMenu(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
+                  theme === 'light' ? 'bg-blue-50 text-blue-700' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Sun className="w-4 h-4" />
+                <span>Light</span>
+                {theme === 'light' && <span className="ml-auto text-blue-600">✓</span>}
+              </button>
+              <button
+                onClick={() => { setTheme('dark'); setShowThemeMenu(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
+                  theme === 'dark' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Moon className="w-4 h-4" />
+                <span>Dark</span>
+                {theme === 'dark' && <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>}
+              </button>
+              <button
+                onClick={() => { setTheme('pastel'); setShowThemeMenu(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
+                  theme === 'pastel' ? 'bg-pink-50 text-pink-700' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Palette className="w-4 h-4" />
+                <span>Pastel</span>
+                {theme === 'pastel' && <span className="ml-auto text-pink-600">✓</span>}
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+      <main className={`flex-1 p-4 md:p-8 overflow-y-auto h-screen text-slate-900 dark:text-slate-100 transition-colors duration-300 ${
+        theme === 'pastel' 
+          ? view === 'dashboard' 
+            ? 'pastel-gradient-pink' 
+            : view === 'table' 
+              ? 'pastel-gradient-sky' 
+              : 'pastel-gradient-mint'
+          : 'bg-slate-50 dark:bg-slate-900'
+      }`}>
         <header className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
           <div className="mb-4 md:mb-0">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
