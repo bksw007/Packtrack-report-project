@@ -135,6 +135,19 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
   // Default Modes
   const modeOptions = ['SEA', 'AIR', 'TRUCK', 'COURIER'];
 
+  // Date input ref for clicking anywhere to open date picker
+  const dateInputRef = useRef<HTMLInputElement>(null);
+
+  // Format date from yyyy-mm-dd to dd-mm-yyyy for display
+  const formatDateForDisplay = (dateStr: string | undefined) => {
+    if (!dateStr) return '';
+    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+      return `${match[3]}-${match[2]}-${match[1]}`;
+    }
+    return dateStr;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -240,7 +253,7 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                 <div className="space-y-4">
                   <div className="flex justify-between border-b border-slate-100 pb-2">
                     <span className="text-slate-500 text-sm">Date</span>
-                    <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData.Date}</span>
+                    <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formatDateForDisplay(formData.Date)}</span>
                   </div>
                   <div className="flex justify-between border-b border-slate-100 pb-2">
                     <span className="text-slate-500 text-sm">Customer</span>
@@ -290,6 +303,15 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                     </div>
                   )}
                 </div>
+                {/* Total Packages Sum */}
+                {PACKAGE_COLUMNS.some(col => (formData[col] as number) > 0) && (
+                  <div className={`mt-4 p-3 rounded-lg border-2 flex justify-between items-center ${isDarkMode ? 'bg-emerald-900/30 border-emerald-600' : 'bg-emerald-50 border-emerald-200'}`}>
+                    <span className="text-xs font-bold text-emerald-600 uppercase">Total Packages</span>
+                    <span className={`font-black text-lg ${isDarkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                      {PACKAGE_COLUMNS.reduce((sum, col) => sum + ((formData[col] as number) || 0), 0)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -337,11 +359,15 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
               <div className="space-y-5">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase">Shipment Date</label>
-                  <div className="relative">
+                  <div 
+                    className="relative cursor-pointer"
+                    onClick={() => dateInputRef.current?.showPicker()}
+                  >
                     <input 
+                      ref={dateInputRef}
                       type="date" name="Date" required
                       value={formData.Date} onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-xl font-semibold transition-all outline-none focus:ring-2 ${
+                      className={`w-full px-4 py-3 pr-10 border rounded-xl font-semibold transition-all outline-none focus:ring-2 cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer ${
                         isDarkMode 
                           ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-800 focus:ring-blue-500' 
                           : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:ring-blue-500'
