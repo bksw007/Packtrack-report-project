@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PackingRecord, PACKAGE_COLUMNS } from '../types';
-import { Save, ArrowLeft, CheckCircle2, Package, Info, ChevronRight, Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
+import { Save, ArrowLeft, CheckCircle2, Package, Info, ChevronRight, Calendar as CalendarIcon, ChevronDown, ClipboardPaste, X } from 'lucide-react';
 
 interface DataInputFormProps {
   onSave: (record: PackingRecord) => Promise<void> | void;
@@ -128,6 +128,10 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
     ...PACKAGE_COLUMNS.reduce((acc, col) => ({ ...acc, [col]: 0 }), {})
   });
 
+  // Batch Entry Modal State
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [batchText, setBatchText] = useState('');
+
   // Default Modes
   const modeOptions = ['SEA', 'AIR', 'TRUCK', 'COURIER'];
 
@@ -137,6 +141,61 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
       ...prev,
       [name]: type === 'number' ? parseFloat(value) || 0 : value
     }));
+  };
+
+  /**
+   * Parse batch data from Excel and map to PACKAGE_COLUMNS
+   */
+  const parseBatchData = (text: string) => {
+    const lines = text.trim().split('\n');
+    const updates: Partial<PackingRecord> = {};
+
+    lines.forEach(line => {
+      // Split by tab
+      const parts = line.split('\t');
+      if (parts.length < 2) return;
+
+      const rawName = parts[0].trim().toUpperCase();
+      const qty = parseInt(parts[1].trim(), 10) || 0;
+
+      // Extract dimension pattern (e.g., 110x110x115, 27X27X22)
+      const dimensionMatch = rawName.match(/(\d+X?\d+X?\d+)/i);
+      const dimension = dimensionMatch ? dimensionMatch[1].toUpperCase() : null;
+
+      // Special cases for WARP QTY
+      if (rawName === 'PALLET' || rawName.startsWith('WOODEN CASE')) {
+        updates['WARP QTY'] = (updates['WARP QTY'] as number || 0) + qty;
+        return;
+      }
+
+      // Special case for UNIT
+      if (rawName === 'UNIT') {
+        updates['UNIT QTY'] = qty;
+        return;
+      }
+
+      // Special case for RETURNABLE
+      if (rawName.startsWith('RETURNABLE')) {
+        updates['RETURNABLE QTY'] = qty;
+        return;
+      }
+
+      // Find matching column by dimension
+      if (dimension) {
+        const matchingCol = PACKAGE_COLUMNS.find(col => {
+          const colDimension = col.replace(' QTY', '').toUpperCase();
+          return colDimension === dimension;
+        });
+        if (matchingCol) {
+          updates[matchingCol] = qty;
+        }
+      }
+    });
+
+    // Update formData with parsed values
+    setFormData(prev => ({ ...prev, ...updates }));
+    setShowBatchModal(false);
+    setBatchText('');
   };
 
   const [isSaving, setIsSaving] = useState(false);
@@ -266,10 +325,10 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-300">
       <form onSubmit={handleReview} className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
           {/* Left: General Info */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className={`p-6 rounded-2xl shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className="lg:col-span-1 flex flex-col">
+            <div className={`p-6 rounded-2xl shadow-sm border flex-1 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
               <h3 className={`text-sm font-black mb-6 flex items-center gap-2 uppercase tracking-wide ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                 <Info className="w-4 h-4 text-blue-600" />
                 Shipment Details
@@ -372,14 +431,24 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
           </div>
 
           {/* Right: Package Details */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className={`p-6 rounded-2xl shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+          <div className="lg:col-span-2 flex flex-col">
+            <div className={`p-6 rounded-2xl shadow-sm border flex-1 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
               <div className="flex justify-between items-center mb-6">
                 <h3 className={`text-sm font-black flex items-center gap-2 uppercase tracking-wide ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                   <Package className="w-4 h-4 text-emerald-600" />
                   Packaging Breakdown
                 </h3>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Dimensions QTY</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowBatchModal(true)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold text-xs hover:bg-emerald-700 transition-all active:scale-95"
+                  >
+                    <ClipboardPaste className="w-3.5 h-3.5" />
+                    Batch Entry
+                  </button>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Dimensions QTY</span>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-4">
@@ -405,7 +474,63 @@ const DataInputForm: React.FC<DataInputFormProps> = ({
                 ))}
               </div>
             </div>
-            <div className={`flex items-center justify-end gap-4 p-4 rounded-2xl border shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+
+            {/* Batch Entry Modal */}
+            {showBatchModal && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+                <div className={`w-full max-w-lg mx-4 rounded-2xl shadow-2xl border overflow-hidden animate-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                  <div className="bg-emerald-600 p-5 text-white flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <ClipboardPaste className="w-6 h-6" />
+                      <div>
+                        <h3 className="text-lg font-bold">Batch Entry</h3>
+                        <p className="text-emerald-100 text-sm">Paste data from Excel</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setShowBatchModal(false); setBatchText(''); }}
+                      className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <textarea
+                      value={batchText}
+                      onChange={(e) => setBatchText(e.target.value)}
+                      placeholder="Paste Excel data here...&#10;Example:&#10;PALLET 110x110x115    5&#10;CARTON 27X27X22    3&#10;RETURNABLE P110X110X110    2"
+                      rows={10}
+                      className={`w-full px-4 py-3 border rounded-xl font-mono text-sm transition-all outline-none resize-none focus:ring-2 ${
+                        isDarkMode 
+                          ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-800 focus:ring-emerald-500 placeholder-slate-500' 
+                          : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:ring-emerald-500'
+                      }`}
+                    />
+                    <div className="flex gap-3 mt-5">
+                      <button
+                        type="button"
+                        onClick={() => { setShowBatchModal(false); setBatchText(''); }}
+                        className={`flex-1 py-3 border rounded-xl font-bold transition-colors ${
+                          isDarkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => parseBatchData(batchText)}
+                        disabled={!batchText.trim()}
+                        className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className={`flex items-center justify-end gap-4 p-4 rounded-2xl border shadow-sm mt-6 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
               <button 
                 type="button" onClick={onCancel}
                 className="px-6 py-3 text-slate-500 font-bold hover:text-red-500 transition-colors text-sm"
