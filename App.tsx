@@ -8,15 +8,28 @@ import DataTable from './components/DataTable';
 import DataInputForm from './components/DataInputForm';
 import SuccessModal from './components/SuccessModal';
 import LoadingModal from './components/LoadingModal';
-import { LayoutDashboard, Table, Upload, PackageCheck, Filter, X, Calendar, User, Package, Download, PlusCircle, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, Table, Upload, PackageCheck, Filter, X, Calendar, User, Package, Download, PlusCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const App: React.FC = () => {
   const [data, setData] = useState<PackingRecord[]>([]);
   const [view, setView] = useState<'dashboard' | 'table' | 'input'>('dashboard');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start as true for initial load
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const isFirstLoad = React.useRef(true);
+
+  // Initial animation: collapse sidebar after initial sync completes
+  useEffect(() => {
+    if (!isLoading && isFirstLoad.current) {
+      const timer = setTimeout(() => {
+        setIsSidebarCollapsed(true);
+        isFirstLoad.current = false;
+      }, 500); // Small delay after modal closes for better UX
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -225,52 +238,74 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row transition-colors duration-300">
-      <aside className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 w-full md:w-64 flex-shrink-0 md:h-screen sticky top-0 z-10 flex flex-col transition-colors duration-300">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg">
+      <aside className={`bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 md:h-screen sticky top-0 z-10 flex flex-col transition-all duration-300 ease-in-out w-full ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}`}>
+        <div className={`p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 relative transition-all duration-300 ${isSidebarCollapsed ? 'justify-center px-2' : ''}`}>
+          <div className="bg-blue-600 p-2 rounded-lg flex-shrink-0">
              <PackageCheck className="text-white w-6 h-6" />
           </div>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white">PackTrack</h1>
+          <h1 className={`text-xl font-bold text-slate-800 dark:text-white whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
+            PackTrack
+          </h1>
+          
+          <button 
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 shadow-sm z-20 hidden md:flex"
+          >
+            {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
         </div>
         
         <nav className="p-4 space-y-2 flex-1">
           <button 
             onClick={() => setView('dashboard')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors overflow-hidden whitespace-nowrap ${
               view === 'dashboard' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-            }`}
+            } ${isSidebarCollapsed ? 'justify-center px-2' : ''}`}
+            title={isSidebarCollapsed ? "Dashboard" : ""}
           >
-            <LayoutDashboard className="w-5 h-5" />
-            Dashboard
+            <div className="flex-shrink-0">
+               <LayoutDashboard className="w-5 h-5" />
+            </div>
+            <span className={`transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto'}`}>Dashboard</span>
           </button>
           
           <button 
             onClick={() => setView('table')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors overflow-hidden whitespace-nowrap ${
               view === 'table' ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-            }`}
+            } ${isSidebarCollapsed ? 'justify-center px-2' : ''}`}
+            title={isSidebarCollapsed ? "Raw Data View" : ""}
           >
-            <Table className="w-5 h-5" />
-            Raw Data View
+            <div className="flex-shrink-0">
+              <Table className="w-5 h-5" />
+            </div>
+            <span className={`transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto'}`}>Raw Data View</span>
           </button>
 
           <button 
             onClick={() => setView('input')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-colors overflow-hidden whitespace-nowrap ${
               view === 'input' ? 'bg-blue-600 text-white dark:bg-blue-500' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-            }`}
+            } ${isSidebarCollapsed ? 'justify-center px-2' : ''}`}
+            title={isSidebarCollapsed ? "Data Entry" : ""}
           >
-            <PlusCircle className="w-5 h-5" />
-            Data Entry
+            <div className="flex-shrink-0">
+              <PlusCircle className="w-5 h-5" />
+            </div>
+            <span className={`transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto'}`}>Data Entry</span>
           </button>
         </nav>
 
         <div className="p-4 border-t border-slate-100 dark:border-slate-800">
            <button 
              onClick={() => setIsDarkMode(!isDarkMode)}
-             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-xs"
+             className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-bold text-xs overflow-hidden whitespace-nowrap ${isSidebarCollapsed ? 'px-2' : ''}`}
+             title={isSidebarCollapsed ? (isDarkMode ? 'Light Mode' : 'Dark Mode') : ""}
            >
-             {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+             <span className={`transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0 hidden' : 'opacity-100 w-auto'}`}>
+               {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+             </span>
+             {isSidebarCollapsed && <div className="flex-shrink-0 w-4 h-4 rounded-full border border-slate-400" />}
            </button>
         </div>
       </aside>
